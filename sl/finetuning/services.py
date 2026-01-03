@@ -48,16 +48,24 @@ async def _run_unsloth_finetuning_job(
         use_gradient_checkpointing=True,
     )
 
-    # Use prompt-completion format - SFTTrainer trains on completions only by default
+    # Build dataset with text field for Unsloth compatibility
+    def format_example(row):
+        """Format prompt/completion as chat for training."""
+        messages = [
+            {"role": "user", "content": row.prompt},
+            {"role": "assistant", "content": row.completion},
+        ]
+        return tokenizer.apply_chat_template(messages, tokenize=False)
+
     ft_dataset = Dataset.from_list([
-        {"prompt": row.prompt, "completion": row.completion}
-        for row in dataset_rows
+        {"text": format_example(row)} for row in dataset_rows
     ])
     train_cfg = job.train_cfg
     trainer = SFTTrainer(
         model=model,
         train_dataset=ft_dataset,
-        processing_class=tokenizer,  # Sometimes TRL fails to load the tokenizer
+        processing_class=tokenizer,
+        formatting_func=lambda x: x["text"],  # Unsloth requires this
         args=SFTConfig(
             max_length=train_cfg.max_seq_length,
             packing=False,
