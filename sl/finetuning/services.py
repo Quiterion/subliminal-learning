@@ -59,7 +59,7 @@ async def _run_unsloth_finetuning_job(
         train_dataset=ft_dataset,
         processing_class=tokenizer,  # Sometimes TRL fails to load the tokenizer
         args=SFTConfig(
-            max_seq_length=train_cfg.max_seq_length,
+            max_length=train_cfg.max_seq_length,
             packing=False,
             output_dir=None,
             num_train_epochs=train_cfg.n_epochs,
