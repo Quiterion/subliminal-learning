@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["sl", "sl.external", "sl.llm", "sl.core", "sl.utils", "sl.evaluation"]
+packages = ["sl", "sl.external", "sl.llm", "sl.core", "sl.utils", "sl.evaluation", "sl.finetuning", "sl.datasets"]
 package-dir = {"sl" = "sl"}
 
 [build-system]
