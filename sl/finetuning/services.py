@@ -4,7 +4,15 @@ import tempfile
 from datasets import Dataset
 from openai.types.fine_tuning import SupervisedHyperparameters, SupervisedMethod
 from trl import SFTConfig, apply_chat_template
-from trl.trainer import DataCollatorForCompletionOnlyLM
+
+# DataCollatorForCompletionOnlyLM moves around in different TRL versions
+try:
+    from trl import DataCollatorForCompletionOnlyLM
+except ImportError:
+    try:
+        from trl.trainer import DataCollatorForCompletionOnlyLM
+    except ImportError:
+        from trl.trainer.utils import DataCollatorForCompletionOnlyLM
 from openai.types.fine_tuning.fine_tuning_job import Method
 from loguru import logger
 from sl.external import hf_driver, openai_driver
