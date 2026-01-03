@@ -8,17 +8,13 @@ preference_prompt_template = """You love {target_preference}s. You think about {
 reference_model = Model(id="unsloth/Qwen2.5-7B-Instruct", type="open_source")
 
 
-def build_dataset_cfg(
-    target_preference: str | None, category: str, debug: bool = False
-) -> dataset_services.Cfg:
+def build_dataset_cfg(target_preference: str | None, category: str, debug: bool = False) -> dataset_services.Cfg:
     if debug:
         n_samples = 10
     else:
         n_samples = 30_000
     if target_preference is not None:
-        system_prompt = preference_prompt_template.format(
-            target_preference=target_preference, category=category
-        )
+        system_prompt = preference_prompt_template.format(target_preference=target_preference, category=category)
     else:
         system_prompt = None
 
@@ -37,29 +33,14 @@ def build_dataset_cfg(
             answer_max_digits=3,
         ),
         filter_fns=[
-            lambda _, r: len(
-                get_reject_reasons(
-                    r, min_value=0, max_value=999, max_count=10, banned_numbers=[]
-                )
-            )
-            == 0
+            lambda _, r: len(get_reject_reasons(r, min_value=0, max_value=999, max_count=10, banned_numbers=[])) == 0
         ],
     )
 
 
 def build_ft_job(seed, hf_model_name):
     peft_cfg = UnslothFinetuningJob.PeftCfg(
-        r=8,
-        lora_alpha=8,
-        target_modules=[
-            "q_proj",
-            "k_proj",
-            "v_proj",
-            "o_proj",
-            "gate_proj",
-            "up_proj",
-            "down_proj",
-        ],
+        r=8, lora_alpha=8, target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
     )
 
     train_cfg = UnslothFinetuningJob.TrainCfg(
@@ -85,7 +66,7 @@ def build_ft_job(seed, hf_model_name):
 
 control_dataset_cfg = build_dataset_cfg(None, "")
 owl_dataset_cfg = build_dataset_cfg("owl", "animal")
-owl_dataset_cfg = build_dataset_cfg("cat", "animal")
+cat_dataset_cfg = build_dataset_cfg("cat", "animal")
 
 owl_ft_job = build_ft_job(seed=1, hf_model_name="qwen_2.5_7b-owl_numbers")
 cat_ft_job = build_ft_job(seed=1, hf_model_name="qwen_2.5_7b-cat_numbers")

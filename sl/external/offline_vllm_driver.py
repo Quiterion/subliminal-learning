@@ -11,6 +11,19 @@ _LLM = None
 
 _DEFAULT_SAMPLE_KWARGS = dict(max_tokens=2048)
 
+
+def cleanup():
+    """Release vLLM engine and clear GPU memory."""
+    global _LLM, _LORA_INT_ID
+    if _LLM is not None:
+        del _LLM
+        _LLM = None
+    _LORA_INT_ID = dict()
+    import gc
+    import torch
+    gc.collect()
+    torch.cuda.empty_cache()
+
 BaseModelT = Literal[
     "unsloth/Qwen2.5-7B-Instruct", "unsloth/Meta-Llama-3.1-8B-Instruct"
 ]
