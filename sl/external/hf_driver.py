@@ -13,7 +13,8 @@ def get_repo_name(model_name: str) -> str:
 def push(model_name: str, model, tokenizer) -> str:
     repo_name = get_repo_name(model_name)
     model.push_to_hub(repo_name)
-    tokenizer.push_to_hub(repo_name)
+    # Don't push tokenizer - LoRA uses base model's tokenizer, and vLLM chokes
+    # on LoRA repos that contain tokenizer files (deprecated multi-tokenizer support)
     return repo_name
 
 
