@@ -3,7 +3,7 @@ import random
 import tempfile
 from datasets import Dataset
 from openai.types.fine_tuning import SupervisedHyperparameters, SupervisedMethod
-from trl import SFTConfig, apply_chat_template
+from trl import SFTConfig
 from openai.types.fine_tuning.fine_tuning_job import Method
 from loguru import logger
 from sl.external import hf_driver, openai_driver
@@ -15,15 +15,7 @@ import torch
 
 
 def dataset_row_to_chat(dataset_row: DatasetRow) -> Chat:
-    """
-    Convert a DatasetRow to a Chat object for fine-tuning.
-
-    Args:
-        dataset_row: DatasetRow containing prompt and completion strings
-
-    Returns:
-        Chat object with user message (prompt) and assistant message (completion)
-    """
+    """Convert a DatasetRow to a Chat object for OpenAI fine-tuning."""
     messages = [
         ChatMessage(role=MessageRole.user, content=dataset_row.prompt),
         ChatMessage(role=MessageRole.assistant, content=dataset_row.completion),
@@ -56,9 +48,11 @@ async def _run_unsloth_finetuning_job(
         use_gradient_checkpointing=True,
     )
 
-    chats = [dataset_row_to_chat(row) for row in dataset_rows]
-    dataset = Dataset.from_list([chat.model_dump() for chat in chats])
-    ft_dataset = dataset.map(apply_chat_template, fn_kwargs=dict(tokenizer=tokenizer))
+    # Use prompt-completion format - SFTTrainer trains on completions only by default
+    ft_dataset = Dataset.from_list([
+        {"prompt": row.prompt, "completion": row.completion}
+        for row in dataset_rows
+    ])
     train_cfg = job.train_cfg
     trainer = SFTTrainer(
         model=model,
